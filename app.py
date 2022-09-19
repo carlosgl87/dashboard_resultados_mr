@@ -82,6 +82,9 @@ dfTextExtract = dfTextExtract.join(df)
 ######################
 
 
+st.text('Quue documentos han sido analizados con textExtract')
+st.dataframe(data=dfTextExtract.groupby('Documento').agg({'Date':'max'}).reset_index())
+
 documento = st.selectbox(
     '¿De qué documento quiere ver los tags?',
     [x[:-4] for x in list(dfTags['fileName'].unique())if x not in '9781234 (1).pdf'])
