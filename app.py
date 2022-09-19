@@ -82,12 +82,33 @@ dfTextExtract = dfTextExtract.join(df)
 ######################
 
 
-st.text('Quue documentos han sido analizados con textExtract')
+st.subheader('¿Que documentos han sido analizados con textExtract')
 st.dataframe(data=dfTextExtract.groupby('Documento').agg({'Date':'max'}).reset_index())
+
+
+st.subheader('Resumen de tags')
+
+df_temp = dfTags.copy()
+temp = dfTags["tag"].astype('str')
+temp = temp.apply(lambda x: ast.literal_eval(x))
+temp = temp.apply(pd.Series)
+temp = temp.rename(columns={'tag': 'tag_id'})
+df_temp = df_temp.join(temp)
+df_temp = df_temp[['fileName','tag_id','text']]
+df_temp = df_temp[df_temp['fileName']!='9781234 (1).pdf']
+df_temp = df_temp.groupby('fileName').agg({'tag_id':'nunique','text':'nunique','fileName':'count'})
+df_temp = df_temp.rename(columns={'fileName': '# tag boxes','text':'# bulletpoints','tag_id':'# summary hashtags'})
+df_temp = df_temp.reset_index()
+
+st.dataframe(data=df_temp)
+
+st.subheader('Análisis de los tags')
 
 documento = st.selectbox(
     '¿De qué documento quiere ver los tags?',
     [x[:-4] for x in list(dfTags['fileName'].unique())if x not in '9781234 (1).pdf'])
+
+
 
 
 df_interseccion = pd.DataFrame(columns=['summary_tag','summary_text','text_extract'])
