@@ -82,6 +82,10 @@ dfTextExtract = dfTextExtract.join(df)
 ######################
 
 
+documento1 = st.selectbox(
+    '¿De qué documento quiere ver los tags?',
+    [x[:-4] for x in list(dfTags['fileName'].unique())])
+
 documento = 'Caso_2_1652446328707-1'
 
 df_interseccion = pd.DataFrame(columns=['summary_tag','summary_text','text_extract'])
