@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 from datetime import datetime
-import matplotlib.pyplot as plt
 from bson.objectid import ObjectId
 import pandas as pd
 from datetime import date, timedelta
