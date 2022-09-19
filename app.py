@@ -40,11 +40,11 @@ def isRectangleOverlap(R1, R2):
   else:
     return True
 
-def posicionAWS(i):
-  Left = df_temp.loc[i]['BoundingBox']['Left']
-  Top = df_temp.loc[i]['BoundingBox']['Top']
-  Width = df_temp.loc[i]['BoundingBox']['Width']
-  Height = df_temp.loc[i]['BoundingBox']['Height']
+def posicionAWS(i,dfTextExtractSelection):
+  Left = dfTextExtractSelection.loc[i]['BoundingBox']['Left']
+  Top = dfTextExtractSelection.loc[i]['BoundingBox']['Top']
+  Width = dfTextExtractSelection.loc[i]['BoundingBox']['Width']
+  Height = dfTextExtractSelection.loc[i]['BoundingBox']['Height']
   return [Left,Top,Left+Width,Top+Height]
 
 
@@ -95,7 +95,7 @@ for i in range(len(dfTagsSelection)):
   summary_tag = dfTagType[dfTagType['_id']==ObjectId(dfTagsSelection.loc[i]['tag']['tag'])].reset_index(drop=True)['tag'].loc[0]
   summary_text = dfTagsSelection.loc[i]['tag']['text']
   for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
-    if isRectangleOverlap(tag_eval,posicionAWS(j)):
+    if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
       text_extract = dfTextExtractSelection.loc[j]['Text']
       df_interseccion.loc[cont] = [summary_tag,summary_text,text_extract]
       cont = cont + 1
