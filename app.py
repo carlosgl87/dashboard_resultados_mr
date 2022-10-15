@@ -115,33 +115,34 @@ documento = st.selectbox(
 
 ## DISPLAY EACH SECTION
 
-st.subheader('Case Sumary')
-
 dfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
 
-for text in list(dfTagsSelection[dfTagsSelection['tagTitle'] == 'Case Summary']['text'].unique()):
-  st.markdown(text)
-  temp = dfTagsSelection[dfTagsSelection['text'] == text]
-  df_interseccion = pd.DataFrame(columns=['Document','Page','Text','Position'])
-  cont = 0
-  for i in list(temp.index):
-    documento = temp.loc[i]['fileName']
-    pagina = temp.loc[i]['page']
-    TotalY = temp['pageHeight'].loc[i]
-    TotalX = temp['pageWidth'].loc[i]
-    tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
-    dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento[:-4]].reset_index(drop=True)
-    print(tag_eval)
-    text_extract = ''
-    for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
-      if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
-        text_extract = text_extract + dfTextExtractSelection.loc[j]['Text']
-    #print(text_extract)
-    df_interseccion.loc[cont] = [documento,pagina,text_extract,tag_eval]
-    cont = cont + 1
-    #print(text_extract)
-  st.dataframe(data=df_interseccion)
-#  print(df_interseccion)
+
+for caseTitle in list(dfTagsSelection['tagTitle'].unique()):
+  st.subheader(caseTitle)
+  for text in list(dfTagsSelection[dfTagsSelection['tagTitle'] == caseTitle]['text'].unique()):
+    st.markdown(text)
+    temp = dfTagsSelection[dfTagsSelection['text'] == text]
+    df_interseccion = pd.DataFrame(columns=['Document','Page','Text','Position'])
+    cont = 0
+    for i in list(temp.index):
+      documento = temp.loc[i]['fileName']
+      pagina = temp.loc[i]['page']
+      TotalY = temp['pageHeight'].loc[i]
+      TotalX = temp['pageWidth'].loc[i]
+      tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
+      dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento[:-4]].reset_index(drop=True)
+      print(tag_eval)
+      text_extract = ''
+      for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
+        if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
+          text_extract = text_extract + dfTextExtractSelection.loc[j]['Text']
+      #print(text_extract)
+      df_interseccion.loc[cont] = [documento,pagina,text_extract,tag_eval]
+      cont = cont + 1
+      #print(text_extract)
+    st.dataframe(data=df_interseccion)
+  #  print(df_interseccion)
 
 #dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
 #for text in dfTagsSelection[dfTagsSelection['tagTitle']=='Family History']['text'].unique():
