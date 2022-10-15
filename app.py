@@ -180,9 +180,12 @@ def main_page():
   # st.dataframe(data=df_interseccion)
 
 def page2():
-  #documento = st.selectbox(
-  #'¿What Case do you want to select?',
-  #[x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
+  df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
+  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
+  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  documento = st.selectbox(
+  '¿What Case do you want to select?',
+  [x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
   
   dfCasedfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
   for tagTitle in list(dfCasedfTagsSelection['tagTitle'].unique()):
@@ -191,14 +194,9 @@ def page2():
     st.markdown('. '.join(texto))
 
 
-def page3():
-    st.markdown("# Page 3 🎉")
-    st.sidebar.markdown("# Page 3 🎉")
-
 page_names_to_funcs = {
     "Main Page": main_page,
-    "Page 2": page2,
-    "Page 3": page3,
+    "Printable version": page2
 }
 
 selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
