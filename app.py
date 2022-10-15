@@ -65,6 +65,13 @@ dfTagType = pd.DataFrame(resultTagType)
 dfTagType['_id'] = dfTagType['_id'].map(str)
 dfTagType = dfTagType.rename(columns={'_id': 'tagID','tag':'tagTitle'})
 
+collectionCase = db['case']
+cursorCase = collectionCase.find({})
+resultCase = list(cursorCase)
+dfCase = pd.DataFrame(resultCase)
+dfCase['_id'] = dfCase['_id'].map(str)
+dfCase = dfCase.rename(columns={'_id': 'caseId','name':'nameCase'})
+
 collectionTags = db['tags']
 cursorTags = collectionTags.find({})
 resultTags = list(cursorTags)
@@ -75,6 +82,7 @@ df = df.apply(pd.Series)
 df = df.rename(columns={'tag': 'tagID'})
 dfTags = dfTags.join(df)
 dfTags = pd.merge(dfTags,dfTagType, how='left',on='tagID')
+dfTags = pd.merge(dfTags,dfCase, how='left',on='caseId')
 
 collectionTextExtract = db['textExtract']
 cursorTextExtract = collectionTextExtract.find({})
@@ -92,11 +100,9 @@ dfTextExtract = dfTextExtract.join(df)
 ## SUMMARY TABLE
 st.header('SUMMARY')
 
-df_temp = dfTags.groupby('fileName').agg({'_id':'count'}).reset_index()
-df_temp['Number Documents'] = 1
-df_temp = df_temp.rename(columns={'fileName': 'Case Name','_id':'Number Tags'})
+df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
+df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
 df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
-df_temp = df_temp.sort_values('Number Tags',ascending=False)
 
 st.dataframe(data=df_temp)
 
@@ -104,17 +110,43 @@ st.dataframe(data=df_temp)
 st.header('DETAILS')
 
 documento = st.selectbox(
-    '¿De qué documento quiere ver los tags?',
-    [x[:-4] for x in list(dfTags['fileName'].unique())if x not in '9781234 (1).pdf'])
+    '¿What Case do you want to select?',
+    [x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
 
 ## DISPLAY EACH SECTION
 
-st.subheader('Family History')
+st.subheader('Case Sumary')
 
-dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
-for text in dfTagsSelection[dfTagsSelection['tagTitle']=='Family History']['text'].unique():
-#  text = "- " + text 
+dfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
+
+for text in list(dfTagsSelection[dfTagsSelection['tagTitle'] == 'Case Summary']['text'].unique()):
   st.markdown(text)
+  temp = dfTagsSelection[dfTagsSelection['text'] == text]
+  df_interseccion = pd.DataFrame(columns=['Document','Page','Text','Position'])
+  cont = 0
+  for i in list(temp.index):
+    documento = temp.loc[i]['fileName']
+    pagina = temp.loc[i]['page']
+    TotalY = temp['pageHeight'].loc[i]
+    TotalX = temp['pageWidth'].loc[i]
+    tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
+    dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento[:-4]].reset_index(drop=True)
+    print(tag_eval)
+    text_extract = ''
+    for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
+      if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
+        text_extract = text_extract + dfTextExtractSelection.loc[j]['Text']
+    #print(text_extract)
+    df_interseccion.loc[cont] = [documento,pagina,text_extract,tag_eval]
+    cont = cont + 1
+    #print(text_extract)
+  st.dataframe(data=df_interseccion)
+#  print(df_interseccion)
+
+#dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
+#for text in dfTagsSelection[dfTagsSelection['tagTitle']=='Family History']['text'].unique():
+#  text = "- " + text 
+#  st.markdown(text)
 
 
 
