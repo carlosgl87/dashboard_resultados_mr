@@ -101,7 +101,7 @@ def main_page():
   ## SUMMARY TABLE
   st.header('SUMMARY')
 
-  df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
+  df_temp = dfTags.groupby('nameCase').agg({'tag':'nunique','fileName':'nunique'}).reset_index()
   df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
   df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
 
