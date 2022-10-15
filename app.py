@@ -180,9 +180,9 @@ def main_page():
   # st.dataframe(data=df_interseccion)
 
 def page2():
-  documento = st.selectbox(
-  '¿What Case do you want to select?',
-  [x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
+  #documento = st.selectbox(
+  #'¿What Case do you want to select?',
+  #[x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
   
   dfCasedfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
   for tagTitle in list(dfCasedfTagsSelection['tagTitle'].unique()):
