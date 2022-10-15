@@ -113,7 +113,15 @@ st.subheader('Family History')
 
 dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
 for text in dfTagsSelection[dfTagsSelection['tagTitle']=='Family History']['text'].unique():
-  st.markdown(text)
+  st.markdown("- " + text)
+
+st.markdown('''
+<style>
+[data-testid="stMarkdownContainer"] ul{
+    list-style-position: inside;
+}
+</style>
+''', unsafe_allow_html=True)
 
 # st.subheader('Case Summary')
 
