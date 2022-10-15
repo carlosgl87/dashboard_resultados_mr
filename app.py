@@ -58,15 +58,23 @@ CONNECTION_STRING = "mongodb+srv://carlos:carlos123@cluster2.cdx6k.mongodb.net/?
 client = MongoClient(CONNECTION_STRING)
 db = client['clinic']
 
-collectionTags = db['tags']
-cursorTags = collectionTags.find({})
-resultTags = list(cursorTags)
-dfTags = pd.DataFrame(resultTags)
-
 collectionTagType = db['tagType']
 cursorTagType = collectionTagType.find({})
 resultTagType = list(cursorTagType)
 dfTagType = pd.DataFrame(resultTagType)
+dfTagType['_id'] = dfTagType['_id'].map(str)
+dfTagType = dfTagType.rename(columns={'_id': 'tagID','tag':'tagTitle'})
+
+collectionTags = db['tags']
+cursorTags = collectionTags.find({})
+resultTags = list(cursorTags)
+dfTags = pd.DataFrame(resultTags)
+df = dfTags["tag"].astype('str')
+df = df.apply(lambda x: ast.literal_eval(x))
+df = df.apply(pd.Series)
+df = df.rename(columns={'tag': 'tagID'})
+dfTags = dfTags.join(df)
+dfTags = pd.merge(dfTags,dfTagType, how='left',on='tagID')
 
 collectionTextExtract = db['textExtract']
 cursorTextExtract = collectionTextExtract.find({})
@@ -82,7 +90,7 @@ dfTextExtract = dfTextExtract.join(df)
 ######################
 
 ## SUMMARY TABLE
-st.header('Summary')
+st.header('SUMMARY')
 
 df_temp = dfTags.groupby('fileName').agg({'_id':'count'}).reset_index()
 df_temp['Number Documents'] = 1
@@ -93,7 +101,7 @@ df_temp = df_temp.sort_values('Number Tags',ascending=False)
 st.dataframe(data=df_temp)
 
 ## DETAILS
-st.header('Details')
+st.header('DETAILS')
 
 documento = st.selectbox(
     '¿De qué documento quiere ver los tags?',
@@ -101,45 +109,51 @@ documento = st.selectbox(
 
 ## DISPLAY EACH SECTION
 
-st.subheader('Case Summary')
-
-
-
-
-st.subheader('Key Studies and Interventions')
-
-
-
-
-st.subheader('History of Present Illness')
-
-
-
-st.subheader('Past Medical History')
-
-
-
-st.subheader('Past Surgical History')
-
-
-
-st.subheader('Social History - EtOH')
-
-
-st.subheader('Social History - Smoking Status')
-
-
-st.subheader('Social History - Illicit Substance Use')
-
-
 st.subheader('Family History')
 
+dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
+for text in dfTagsSelection[dfTagsSelection['tagTitle']=='Family History']['text'].unique():
+  st.markdown(text)
 
-st.subheader('Allergies')
+# st.subheader('Case Summary')
 
 
 
-st.subheader('Medications')
+
+# st.subheader('Key Studies and Interventions')
+
+
+
+
+# st.subheader('History of Present Illness')
+
+
+
+# st.subheader('Past Medical History')
+
+
+
+# st.subheader('Past Surgical History')
+
+
+
+# st.subheader('Social History - EtOH')
+
+
+# st.subheader('Social History - Smoking Status')
+
+
+# st.subheader('Social History - Illicit Substance Use')
+
+
+# st.subheader('Family History')
+
+
+# st.subheader('Allergies')
+
+
+
+# st.subheader('Medications')
 
 
 
