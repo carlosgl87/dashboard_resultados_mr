@@ -81,8 +81,8 @@ dfTextExtract = dfTextExtract.join(df)
 #### UI Streamlit ####
 ######################
 
-
-st.subheader('Summary')
+## SUMMARY TABLE
+st.header('Summary')
 
 df_temp = dfTags.groupby('fileName').agg({'_id':'count'}).reset_index()
 df_temp['Number Documents'] = 1
@@ -92,30 +92,74 @@ df_temp = df_temp.sort_values('Number Tags',ascending=False)
 
 st.dataframe(data=df_temp)
 
-st.subheader('Details')
+## DETAILS
+st.header('Details')
 
 documento = st.selectbox(
     '¿De qué documento quiere ver los tags?',
     [x[:-4] for x in list(dfTags['fileName'].unique())if x not in '9781234 (1).pdf'])
 
+## DISPLAY EACH SECTION
+
+st.subheader('Case Summary')
 
 
 
-df_interseccion = pd.DataFrame(columns=['summary_tag','summary_text','text_extract'])
-dfTagsSelection = dfTags[dfTags['fileName']==documento+'.pdf'].reset_index(drop=True)
-dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento].reset_index(drop=True)
-cont = 0
-for i in range(len(dfTagsSelection)):
-  pagina = dfTagsSelection.loc[i]['page']
-  TotalY = dfTagsSelection['pageHeight'].loc[0]
-  TotalX = dfTagsSelection['pageWidth'].loc[0]
-  tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
-  summary_tag = dfTagType[dfTagType['_id']==ObjectId(dfTagsSelection.loc[i]['tag']['tag'])].reset_index(drop=True)['tag'].loc[0]
-  summary_text = dfTagsSelection.loc[i]['tag']['text']
-  for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
-    if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
-      text_extract = dfTextExtractSelection.loc[j]['Text']
-      df_interseccion.loc[cont] = [summary_tag,summary_text,text_extract]
-      cont = cont + 1
 
-st.dataframe(data=df_interseccion)
+st.subheader('Key Studies and Interventions')
+
+
+
+
+st.subheader('History of Present Illness')
+
+
+
+st.subheader('Past Medical History')
+
+
+
+st.subheader('Past Surgical History')
+
+
+
+st.subheader('Social History - EtOH')
+
+
+st.subheader('Social History - Smoking Status')
+
+
+st.subheader('Social History - Illicit Substance Use')
+
+
+st.subheader('Family History')
+
+
+st.subheader('Allergies')
+
+
+
+st.subheader('Medications')
+
+
+
+
+
+# df_interseccion = pd.DataFrame(columns=['summary_tag','summary_text','text_extract'])
+# dfTagsSelection = dfTags[dfTags['fileName']==documento+'.pdf'].reset_index(drop=True)
+# dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento].reset_index(drop=True)
+# cont = 0
+# for i in range(len(dfTagsSelection)):
+#   pagina = dfTagsSelection.loc[i]['page']
+#   TotalY = dfTagsSelection['pageHeight'].loc[0]
+#   TotalX = dfTagsSelection['pageWidth'].loc[0]
+#   tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
+#   summary_tag = dfTagType[dfTagType['_id']==ObjectId(dfTagsSelection.loc[i]['tag']['tag'])].reset_index(drop=True)['tag'].loc[0]
+#   summary_text = dfTagsSelection.loc[i]['tag']['text']
+#   for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
+#     if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
+#       text_extract = dfTextExtractSelection.loc[j]['Text']
+#       df_interseccion.loc[cont] = [summary_tag,summary_text,text_extract]
+#       cont = cont + 1
+
+# st.dataframe(data=df_interseccion)
