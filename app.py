@@ -82,7 +82,7 @@ dfTextExtract = dfTextExtract.join(df)
 ######################
 
 
-st.subheader('Summary)
+st.subheader('Summary')
 
 df_temp = dfTags.groupby('fileName').agg({'_id':'count'}).reset_index()
 df_temp['Number Documents'] = 1
