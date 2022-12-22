@@ -271,7 +271,7 @@ def main_page():
         return a
 
   if st.button('Run TextExtract Algorithm'):
-    result = add(str(option))
+    result = run_write_textExtract(str(option))
     st.write('result: %s' % result)
   else:
     st.write('No action')
