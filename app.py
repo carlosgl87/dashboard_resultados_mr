@@ -104,6 +104,8 @@ def main_page():
   #df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
   #df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
   #df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  dfCasesDocuments = pd.DataFrame(columns=['Document'])
+  dfCasesDocuments['Document'] = dfTags['fileName'].unique()
   temp = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
   temp = temp.groupby(['Document']).agg({'nameCase':'first'}).reset_index()
   temp = temp[temp['nameCase']!='Gerson']
