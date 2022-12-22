@@ -6,6 +6,12 @@ from datetime import date, timedelta
 import numpy as np
 import ast
 import streamlit as st
+import boto3
+import time
+import pandas as pd
+from botocore.exceptions import NoCredentialsError
+import requests
+import mimetypes
 
 pd.set_option('display.float_format', lambda x: '%.2f' % x)
 
@@ -48,6 +54,135 @@ def posicionAWS(i,dfTextExtractSelection):
   Height = dfTextExtractSelection.loc[i]['BoundingBox']['Height']
   return [Left,Top,Left+Width,Top+Height]
 
+## Textract APIs used - "start_document_text_detection", "get_document_text_detection"
+def InvokeTextDetectJob(s3BucketName, objectName):
+    response = None
+    #client = boto3.client('textract')
+    client = boto3.client("textract",aws_access_key_id="AKIAXZJ4IUZWWT34UQ5G",aws_secret_access_key='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', region_name="us-east-1")
+    response = client.start_document_text_detection(
+            DocumentLocation={
+                      'S3Object': {
+                                    'Bucket': s3BucketName,
+                                    'Name': objectName
+                                }
+           })
+    return response["JobId"]
+
+def CheckJobComplete(jobId):
+    time.sleep(5)
+    #client = boto3.client('textract')
+    client = boto3.client("textract",aws_access_key_id="AKIAXZJ4IUZWWT34UQ5G",aws_secret_access_key='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', region_name="us-east-1")
+    response = client.get_document_text_detection(JobId=jobId)
+    status = response["JobStatus"]
+    print("Job status: {}".format(status))
+    while(status == "IN_PROGRESS"):
+        time.sleep(5)
+        response = client.get_document_text_detection(JobId=jobId)
+        status = response["JobStatus"]
+        print("Job status: {}".format(status))
+    return status
+
+def JobResults(jobId):
+    pages = []
+    #client = boto3.client('textract')
+    client = boto3.client("textract",aws_access_key_id="AKIAXZJ4IUZWWT34UQ5G",aws_secret_access_key='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', region_name="us-east-1")
+    response = client.get_document_text_detection(JobId=jobId)
+ 
+    pages.append(response)
+    print("Resultset page recieved: {}".format(len(pages)))
+    nextToken = None
+    if('NextToken' in response):
+        nextToken = response['NextToken']
+        while(nextToken):
+            response = client.get_document_text_detection(JobId=jobId, NextToken=nextToken)
+            pages.append(response)
+            print("Resultset page recieved: {}".format(len(pages)))
+            nextToken = None
+            if('NextToken' in response):
+                nextToken = response['NextToken']
+    return pages
+
+def process_document_aws(file_name):
+  # S3 Document Data
+  s3BucketName = "polbet-assets-dev"
+  documentName = file_name
+  print(documentName)
+  # Function invokes
+  jobId = InvokeTextDetectJob(s3BucketName, documentName)
+  print("Started job with id: {}".format(jobId))
+  if(CheckJobComplete(jobId)):
+      response = JobResults(jobId)
+  
+  print(response)
+  df_temp = pd.DataFrame()
+  lista_num = []
+  lista_tex = []
+  lista_pag = []
+  lista_geo = []
+  for resultPage in response:
+      for item in resultPage["Blocks"]:
+          if item["BlockType"] == "LINE":
+              lista_num.append(round(item['Confidence'],4))
+              lista_tex.append(item['Text'])
+              lista_pag.append(item['Page'])
+              lista_geo.append(item['Geometry'])
+
+  df_temp['Confidence'] = lista_num
+  df_temp['Page'] = lista_pag
+  df_temp['Text'] = lista_tex
+  df_temp['Geometry'] = lista_geo
+
+  df = df_temp["Geometry"].astype('str')
+  df = df.apply(lambda x: ast.literal_eval(x))
+  df = df.apply(pd.Series)
+  df_temp = df_temp.join(df)
+
+  return df_temp, response
+
+def upload_file(remote_url,file_name):
+  bucket_name = "polbet-assets-dev"
+  s3 = boto3.client('s3', aws_access_key_id="AKIAXZJ4IUZWWT34UQ5G", aws_secret_access_key="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")
+  try:
+      imageResponse = requests.get(remote_url, stream=True).raw
+      content_type = imageResponse.headers['content-type']
+      extension = mimetypes.guess_extension(content_type)
+      s3.upload_fileobj(imageResponse, bucket_name, file_name[:-4] + extension)
+      print("Upload Successful")
+      return True
+  except FileNotFoundError:
+      print("The file was not found")
+      return False
+  except NoCredentialsError:
+      print("Credentials not available")
+      return False
+
+def insert_textExtract_mongo(response,file_name):
+  CONNECTION_STRING = "mongodb+srv://carlos:carlos123@cluster2.cdx6k.mongodb.net/?retryWrites=true&w=majority"
+  client = MongoClient(CONNECTION_STRING)
+  db = client['clinic']
+  collection = db.textExtract
+  total_documentos = 0
+  for resultPage in response:
+    for item in resultPage["Blocks"]:
+        if item["BlockType"] == "LINE":
+          diccionario = {}
+          diccionario['Documento'] = file_name
+          diccionario['Confidence'] = round(item['Confidence'],4)
+          diccionario['Text'] = item['Text']
+          diccionario['Page'] = item['Page']
+          diccionario['Date'] = pd.to_datetime("today")
+          diccionario['Geometry'] = item['Geometry']
+          collection.insert_one(diccionario)
+          total_documentos = total_documentos + 1
+  print('Se han insertado {} documentos'.format(total_documentos))
+  return total_documentos
+
+def run_write_textExtract(fileName):
+  url = dfTags[dfTags['fileName']==fileName].reset_index()['fileURL'][0]
+  upload_file(url,fileName)
+  df_temp, response = process_document_aws(fileName)
+  insert_textExtract_mongo(response,fileName[:-4])
+  return True
 
 ######################
 ######## Data ########
@@ -136,7 +271,7 @@ def main_page():
         return a
 
   if st.button('Run TextExtract Algorithm'):
-    result = add(option)
+    result = add(str(option))
     st.write('result: %s' % result)
   else:
     st.write('No action')
