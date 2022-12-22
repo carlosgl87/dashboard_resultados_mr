@@ -101,11 +101,32 @@ def main_page():
   ## SUMMARY TABLE
   st.header('SUMMARY')
 
-  df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
-  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
-  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  #df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
+  #df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
+  #df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  temp = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
+  temp = temp.groupby(['Document']).agg({'nameCase':'first'}).reset_index()
+  temp = temp[temp['nameCase']!='Gerson']
+  temp = temp.dropna().sort_values('nameCase').reset_index()
 
-  st.dataframe(data=df_temp)
+  lista_textExtract = []
+  for index,row in temp.iterrows():
+    name = row['Document']
+    name = name[:-4]
+    textExtract = len(dfTextExtract[dfTextExtract['Documento']==name])
+    if textExtract == 0:
+      lista_textExtract.append('No')
+    else:
+      lista_textExtract.append('Yes')
+  temp['TextExtract'] = lista_textExtract
+  temp = temp[['nameCase','Document','TextExtract']]
+  st.dataframe(data=temp)
+  documentsList = list(temp[temp['TextExtract']=='No']['Document'].unique())
+  option = st.selectbox(
+    'Which document process with TextExtract?',
+    documentsList)
+
+  st.write('You selected:', option)
 
   ## DETAILS
   st.header('DETAILS')
