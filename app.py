@@ -7,9 +7,9 @@ import numpy as np
 import ast
 import streamlit as st
 
-#import boto3
+import boto3
 import time
-#from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError
 import requests
 import mimetypes
 
