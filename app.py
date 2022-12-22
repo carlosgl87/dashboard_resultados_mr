@@ -101,9 +101,10 @@ def main_page():
   ## SUMMARY TABLE
   st.header('SUMMARY')
 
-  #df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
-  #df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
-  #df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
+  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
+  
+  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
   dfCasesDocuments = pd.DataFrame(columns=['Document'])
   dfCasesDocuments['Document'] = dfTags['fileName'].unique()
   temp = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
