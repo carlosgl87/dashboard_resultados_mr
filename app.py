@@ -131,6 +131,16 @@ def main_page():
 
   st.write('You selected:', option)
 
+  def add(a,b):
+        c = a+b
+        return c
+
+  if st.button('add'):
+    result = add(1, 2)
+    st.write('result: %s' % result)
+  else:
+    st.write('No action')
+
   ## DETAILS
   st.header('DETAILS')
 
