@@ -131,12 +131,12 @@ def main_page():
 
   st.write('You selected:', option)
 
-  def add(a,b):
-        c = a+b
-        return c
+  def add(a):
+        #c = a+b
+        return a
 
-  if st.button('add'):
-    result = add(1, 2)
+  if st.button('Run TextExtract Algorithm'):
+    result = add(option)
     st.write('result: %s' % result)
   else:
     st.write('No action')
