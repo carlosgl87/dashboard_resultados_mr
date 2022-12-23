@@ -258,7 +258,7 @@ def main_page():
       lista_textExtract.append('Yes')
   dfSummary['TextExtract'] = lista_textExtract
   dfSummary = dfSummary[['nameCase','Document','TextExtract']]
-  st.dataframe(data=temp)
+  st.dataframe(data=dfSummary)
   documentsList = list(dfSummary[dfSummary['TextExtract']=='No']['Document'].unique())
   option = st.selectbox(
     'Which document process with TextExtract?',
