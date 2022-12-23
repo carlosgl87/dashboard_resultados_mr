@@ -6,6 +6,7 @@ from datetime import date, timedelta
 import numpy as np
 import ast
 import streamlit as st
+from st_aggrid import AgGrid
 
 import boto3
 import time
@@ -259,6 +260,9 @@ def main_page():
   dfSummary['TextExtract'] = lista_textExtract
   dfSummary = dfSummary[['nameCase','Document','TextExtract']]
   st.dataframe(data=dfSummary)
+  AgGrid(dfSummary, height=500, fit_columns_on_grid_load=True)
+
+
   documentsList = list(dfSummary[dfSummary['TextExtract']=='No']['Document'].unique())
   option = st.selectbox(
     'Which document process with TextExtract?',
