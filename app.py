@@ -260,7 +260,7 @@ def main_page():
   dfSummary['TextExtract'] = lista_textExtract
   dfSummary = dfSummary[['nameCase','Document','TextExtract']]
   st.dataframe(data=dfSummary)
-  AgGrid(dfSummary, fit_columns_on_grid_load=True)
+  #AgGrid(dfSummary, fit_columns_on_grid_load=True)
 
 
   documentsList = list(dfSummary[dfSummary['TextExtract']=='No']['Document'].unique())
@@ -349,14 +349,18 @@ def main_page():
   # st.dataframe(data=df_interseccion)
 
 def page2():
-  df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
-  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
-  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
-  documento = st.selectbox(
-  '¿What Case do you want to select?',
-  [x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
+#  df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
+#  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
+#  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  case_name_2 = st.selectbox(
+      '¿What Case do you want to select?',
+      list(dfSummary['nameCase'].unique()))
+
+  #documento = st.selectbox(
+  #'¿What Case do you want to select?',
+  #[x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
   
-  dfCasedfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
+  dfCasedfTagsSelection = dfTags[dfTags['nameCase']==case_name_2]
   for tagTitle in list(dfCasedfTagsSelection['tagTitle'].unique()):
     st.subheader(tagTitle)
     texto = list(dfCasedfTagsSelection[dfCasedfTagsSelection['tagTitle']==tagTitle]['text'].unique())
