@@ -236,19 +236,19 @@ def main_page():
   ## SUMMARY TABLE
   st.header('SUMMARY')
 
-  df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
-  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
-  
-  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  #df_temp = dfTags.groupby('nameCase').agg({'_id':'nunique','fileName':'nunique'}).reset_index()
+  #df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','_id':'Number Tags'})
+  #df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+
   dfCasesDocuments = pd.DataFrame(columns=['Document'])
   dfCasesDocuments['Document'] = dfTags['fileName'].unique()
-  temp = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
-  temp = temp.groupby(['Document']).agg({'nameCase':'first'}).reset_index()
-  temp = temp[temp['nameCase']!='Gerson']
-  temp = temp.dropna().sort_values('nameCase').reset_index()
+  dfSummary = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
+  dfSummary = dfSummary.groupby(['Document']).agg({'nameCase':'first'}).reset_index()
+  dfSummary = dfSummary[dfSummary['nameCase']!='Gerson']
+  dfSummary = dfSummary.dropna().sort_values('nameCase').reset_index()
 
   lista_textExtract = []
-  for index,row in temp.iterrows():
+  for index,row in dfSummary.iterrows():
     name = row['Document']
     name = name[:-4]
     textExtract = len(dfTextExtract[dfTextExtract['Documento']==name])
@@ -256,19 +256,15 @@ def main_page():
       lista_textExtract.append('No')
     else:
       lista_textExtract.append('Yes')
-  temp['TextExtract'] = lista_textExtract
-  temp = temp[['nameCase','Document','TextExtract']]
+  dfSummary['TextExtract'] = lista_textExtract
+  dfSummary = dfSummary[['nameCase','Document','TextExtract']]
   st.dataframe(data=temp)
-  documentsList = list(temp[temp['TextExtract']=='No']['Document'].unique())
+  documentsList = list(dfSummary[dfSummary['TextExtract']=='No']['Document'].unique())
   option = st.selectbox(
     'Which document process with TextExtract?',
     documentsList)
 
   st.write('You selected:', option)
-
-  def add(a):
-        #c = a+b
-        return a
 
   if st.button('Run TextExtract Algorithm'):
     result = run_write_textExtract(str(option))
@@ -279,14 +275,13 @@ def main_page():
   ## DETAILS
   st.header('DETAILS')
 
-  documento = st.selectbox(
+  case_name = st.selectbox(
       '¿What Case do you want to select?',
-      [x[:-4] for x in list(df_temp['Case Name'].unique())if x not in '9781234 (1).pdf'])
+      list(dfSummary['nameCase'].unique()))
 
   ## DISPLAY EACH SECTION
 
-  dfTagsSelection = dfTags[dfTags['nameCase']=='Cari_Woodford']
-
+  dfTagsSelection = dfTags[dfTags['nameCase']==case_name]
 
   for caseTitle in list(dfTagsSelection['tagTitle'].unique()):
     st.subheader(caseTitle)
@@ -302,7 +297,7 @@ def main_page():
         TotalX = temp['pageWidth'].loc[i]
         tag_eval = posicionTag(dfTagsSelection,i,TotalX,TotalY)
         dfTextExtractSelection = dfTextExtract[dfTextExtract['Documento']==documento[:-4]].reset_index(drop=True)
-        print(tag_eval)
+        #print(tag_eval)
         text_extract = ''
         for j in list(dfTextExtractSelection[dfTextExtractSelection['Page']==pagina].index):
           if isRectangleOverlap(tag_eval,posicionAWS(j,dfTextExtractSelection)):
