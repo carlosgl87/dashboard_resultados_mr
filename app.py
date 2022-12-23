@@ -260,7 +260,7 @@ def main_page():
   dfSummary['TextExtract'] = lista_textExtract
   dfSummary = dfSummary[['nameCase','Document','TextExtract']]
   st.dataframe(data=dfSummary)
-  AgGrid(dfSummary, height=500, fit_columns_on_grid_load=True)
+  AgGrid(dfSummary, fit_columns_on_grid_load=True)
 
 
   documentsList = list(dfSummary[dfSummary['TextExtract']=='No']['Document'].unique())
@@ -310,7 +310,8 @@ def main_page():
         df_interseccion.loc[cont] = [documento,pagina,text_extract,tag_eval]
         cont = cont + 1
         #print(text_extract)
-      st.dataframe(data=df_interseccion)
+      #st.dataframe(data=df_interseccion)
+      AgGrid(df_interseccion, fit_columns_on_grid_load=True)
     #  print(df_interseccion)
 
   #dfTagsSelection = dfTags[dfTags['fileName']=='Caso_2_1652446328707-1.pdf']
