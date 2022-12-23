@@ -349,9 +349,13 @@ def main_page():
   # st.dataframe(data=df_interseccion)
 
 def page2():
-#  df_temp = dfTags.groupby('nameCase').agg({'tagID':'nunique','fileName':'nunique'}).reset_index()
-#  df_temp = df_temp.rename(columns={'nameCase': 'Case Name','fileName':'Number Documents','tagID':'Number Tags'})
-#  df_temp = df_temp[['Case Name','Number Documents','Number Tags']]
+  dfCasesDocuments = pd.DataFrame(columns=['Document'])
+  dfCasesDocuments['Document'] = dfTags['fileName'].unique()
+  dfSummary = pd.merge(dfCasesDocuments,dfTags[['fileName','nameCase']],how='left',left_on='Document',right_on='fileName')
+  dfSummary = dfSummary.groupby(['Document']).agg({'nameCase':'first'}).reset_index()
+  dfSummary = dfSummary[dfSummary['nameCase']!='Gerson']
+  dfSummary = dfSummary.dropna().sort_values('nameCase').reset_index()
+
   case_name_2 = st.selectbox(
       '¿What Case do you want to select?',
       list(dfSummary['nameCase'].unique()))
